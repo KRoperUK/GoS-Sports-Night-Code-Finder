@@ -10,7 +10,11 @@ import threading
 import time
 import string
 import itertools
+import logging
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='output.log',encoding='utf-8', level=logging.INFO)
+logger.setLevel("INFO")
 
 url = "https://www.guildofstudents.com/ents/event/9497/?code="
 
@@ -22,7 +26,7 @@ def check_for_code(args: list[str]) -> None:
     code: str = args[0]
     valid_codes: dict[str, str] = args[1]
     lock: threading.Lock = args[2]
-    # print("[INFO] Checking code: " + code)
+    logger.info("Checking code: " + code)
 
     session = requests.Session()
     retries = Retry(total=10, backoff_factor=30, status_forcelist=[500, 502, 503, 504])
@@ -36,24 +40,24 @@ def check_for_code(args: list[str]) -> None:
     inner_ticket_box: Tag | NavigableString | None = soup.find('div', class_="event_tickets")
 
     if not inner_ticket_box or not isinstance(inner_ticket_box, Tag):
-        # print("[ERROR] Inner ticket box not found")
+        logger.error("Inner ticket box not found")
         return
 
     if len(inner_ticket_box.find_all('div', class_="event_ticket")) == 1:
-        print("[INFO] Valid Code! " + code)
+        logger.info("Valid Code! " + code)
         # get the span inside the first div
         society_name = inner_ticket_box.find('div').find('span').text
         # format: £6.00 (Swimming)
         # Find the value in the brackets
         society_name: str = society_name[society_name.find("(") + 1:society_name.find(")")]
-        print("[INFO] Society name: " + society_name)
+        logger.info("Society name: " + society_name)
         # save to the dictionary
-        print("[INFO] Found valid code: " + code + " for society: " + society_name)
+        logger.info("Found valid code: " + code + " for society: " + society_name)
         with lock:
             valid_codes[society_name] = code
     else: 
-        print("[ERROR] Unexpected number of DIVs... found: " + str(len(inner_ticket_box.find_all('div'))))
-        print(["[DEBUG]", inner_ticket_box])
+        logger.error("Unexpected number of DIVs... found: " + str(len(inner_ticket_box.find_all('div'))))
+        logger.debug(inner_ticket_box)
 
 
 def iterate_over_all_codes() -> None:
