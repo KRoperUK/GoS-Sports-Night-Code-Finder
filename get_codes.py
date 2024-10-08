@@ -78,7 +78,7 @@ def iterate_over_all_codes(possible_codes = POSSIBLE_CODES) -> None:
 if __name__ == "__main__":
     single_code = (True if os.getenv("SINGLE_CODE", "false") == "true" else False) 
 
-    if single_code:
+    if not single_code:
         iterate_over_all_codes()
     else:
         iterate_over_all_codes(possible_codes=(f"{a}{b}{c}{d}{e}{f}" for a, b, c, d, e, f in itertools.product('a', repeat=6)))
