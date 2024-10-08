@@ -3,7 +3,7 @@ run-name: Main action
 on: [push]
 
 env:
-  single_code: "true"
+  single_code: "false"
 
 jobs:
   Explore-GitHub-Actions:
