@@ -11,6 +11,7 @@ import time
 import string
 import itertools
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename='output.log',encoding='utf-8', level=logging.INFO)
@@ -60,7 +61,7 @@ def check_for_code(args: list[str]) -> None:
         logger.debug(inner_ticket_box)
 
 
-def iterate_over_all_codes() -> None:
+def iterate_over_all_codes(possible_codes = POSSIBLE_CODES) -> None:
     # codes can be any 6 digits, so iterate over all of them
     with Manager() as manager:
 
@@ -68,11 +69,16 @@ def iterate_over_all_codes() -> None:
         lock: threading.Lock = manager.Lock()
 
         with Pool(processes=10) as pool:
-            for _ in pool.imap_unordered(check_for_code, ((code, valid_codes, lock) for code in POSSIBLE_CODES), chunksize=500):
+            for _ in pool.imap_unordered(check_for_code, ((code, valid_codes, lock) for code in possible_codes), chunksize=500):
                 pass
 
         save_dictionary_to_file(dict(valid_codes))
 
 
 if __name__ == "__main__":
-    iterate_over_all_codes()
+    single_code = (True if os.getenv("SINGLE_CODE", "false") == "true" else False) 
+
+    if single_code:
+        iterate_over_all_codes()
+    else:
+        iterate_over_all_codes(possible_codes=(f"{a}{b}{c}{d}{e}{f}" for a, b, c, d, e, f in itertools.product('a', repeat=6)))
